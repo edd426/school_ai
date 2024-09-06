@@ -204,6 +204,7 @@ def insert_sample_data(connection):
 
 def main():
     """Main function to initialize the database and insert sample data."""
+    # This function orchestrates the entire database initialization process
     # Connect to the MySQL server
     server_connection = create_server_connection()
     if server_connection is not None:
