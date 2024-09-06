@@ -1,167 +1,227 @@
 import mysql.connector
 from mysql.connector import Error
+import os
+import logging
+from dotenv import load_dotenv
+import yaml
+from faker import Faker
+import random
+from datetime import datetime, timedelta
+
+# Load environment variables
+load_dotenv()
+
+# Set up logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# Load configuration
+with open('config.yaml', 'r') as file:
+    config = yaml.safe_load(file)
 
 def create_server_connection():
+    """Create a connection to the MySQL server."""
     try:
         connection = mysql.connector.connect(
-            host='localhost',
-            user='root',
-            password='Swordfish'  # Replace with your MySQL root password
+            host=config['mysql']['host'],
+            user=config['mysql']['user'],
+            password=os.getenv('MYSQL_PASSWORD')
         )
+        logging.info("Successfully connected to MySQL server")
         return connection
     except Error as e:
-        print(f"Error connecting to MySQL Server: {e}")
+        logging.error(f"Error connecting to MySQL Server: {e}")
         return None
 
 def create_database(connection, database_name):
+    """Create a new database if it doesn't exist."""
     cursor = connection.cursor()
     try:
         cursor.execute(f"CREATE DATABASE IF NOT EXISTS {database_name}")
-        print(f"Database '{database_name}' created successfully")
+        logging.info(f"Database '{database_name}' created successfully")
     except Error as e:
-        print(f"Error creating database: {e}")
+        logging.error(f"Error creating database: {e}")
 
 def create_db_connection(database_name):
+    """Create a connection to the specified database."""
     try:
         connection = mysql.connector.connect(
-            host='localhost',
-            user='root',
-            password='your_password_here',  # Replace with your MySQL root password
+            host=config['mysql']['host'],
+            user=config['mysql']['user'],
+            password=os.getenv('MYSQL_PASSWORD'),
             database=database_name
         )
+        logging.info(f"Successfully connected to database: {database_name}")
         return connection
     except Error as e:
-        print(f"Error connecting to MySQL Database: {e}")
+        logging.error(f"Error connecting to MySQL Database: {e}")
         return None
 
 def execute_query(connection, query):
+    """Execute a given SQL query."""
     cursor = connection.cursor()
     try:
         cursor.execute(query)
         connection.commit()
-        print("Query executed successfully")
+        logging.info("Query executed successfully")
     except Error as e:
-        print(f"Error executing query: {e}")
+        logging.error(f"Error executing query: {e}")
 
 def create_tables(connection):
-    create_students_table = """
-    CREATE TABLE IF NOT EXISTS students (
-        student_id INT AUTO_INCREMENT PRIMARY KEY,
-        first_name VARCHAR(50) NOT NULL,
-        last_name VARCHAR(50) NOT NULL,
-        date_of_birth DATE NOT NULL,
-        grade_level INT NOT NULL
-    );
-    """
+    """Create the necessary tables in the database."""
+    tables = [
+        """
+        CREATE TABLE IF NOT EXISTS students (
+            student_id INT AUTO_INCREMENT PRIMARY KEY,
+            first_name VARCHAR(50) NOT NULL,
+            last_name VARCHAR(50) NOT NULL,
+            date_of_birth DATE NOT NULL,
+            grade_level INT NOT NULL
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS teachers (
+            teacher_id INT AUTO_INCREMENT PRIMARY KEY,
+            first_name VARCHAR(50) NOT NULL,
+            last_name VARCHAR(50) NOT NULL,
+            subject VARCHAR(50) NOT NULL
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS courses (
+            course_id INT AUTO_INCREMENT PRIMARY KEY,
+            course_name VARCHAR(100) NOT NULL,
+            teacher_id INT,
+            FOREIGN KEY (teacher_id) REFERENCES teachers(teacher_id)
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS enrollments (
+            enrollment_id INT AUTO_INCREMENT PRIMARY KEY,
+            student_id INT,
+            course_id INT,
+            FOREIGN KEY (student_id) REFERENCES students(student_id),
+            FOREIGN KEY (course_id) REFERENCES courses(course_id)
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS grades (
+            grade_id INT AUTO_INCREMENT PRIMARY KEY,
+            enrollment_id INT,
+            grade_value DECIMAL(5,2) NOT NULL,
+            FOREIGN KEY (enrollment_id) REFERENCES enrollments(enrollment_id)
+        )
+        """
+    ]
 
-    create_teachers_table = """
-    CREATE TABLE IF NOT EXISTS teachers (
-        teacher_id INT AUTO_INCREMENT PRIMARY KEY,
-        first_name VARCHAR(50) NOT NULL,
-        last_name VARCHAR(50) NOT NULL,
-        subject VARCHAR(50) NOT NULL
-    );
-    """
+    for table in tables:
+        execute_query(connection, table)
 
-    create_courses_table = """
-    CREATE TABLE IF NOT EXISTS courses (
-        course_id INT AUTO_INCREMENT PRIMARY KEY,
-        course_name VARCHAR(100) NOT NULL,
-        teacher_id INT,
-        FOREIGN KEY (teacher_id) REFERENCES teachers(teacher_id)
-    );
-    """
-
-    create_enrollments_table = """
-    CREATE TABLE IF NOT EXISTS enrollments (
-        enrollment_id INT AUTO_INCREMENT PRIMARY KEY,
-        student_id INT,
-        course_id INT,
-        FOREIGN KEY (student_id) REFERENCES students(student_id),
-        FOREIGN KEY (course_id) REFERENCES courses(course_id)
-    );
-    """
-
-    create_grades_table = """
-    CREATE TABLE IF NOT EXISTS grades (
-        grade_id INT AUTO_INCREMENT PRIMARY KEY,
-        enrollment_id INT,
-        grade_value DECIMAL(5,2) NOT NULL,
-        FOREIGN KEY (enrollment_id) REFERENCES enrollments(enrollment_id)
-    );
-    """
-
-    execute_query(connection, create_students_table)
-    execute_query(connection, create_teachers_table)
-    execute_query(connection, create_courses_table)
-    execute_query(connection, create_enrollments_table)
-    execute_query(connection, create_grades_table)
+def generate_sample_data(num_students=50, num_teachers=10):
+    """Generate sample data using Faker."""
+    fake = Faker()
+    
+    students = []
+    for _ in range(num_students):
+        students.append({
+            'first_name': fake.first_name(),
+            'last_name': fake.last_name(),
+            'date_of_birth': fake.date_of_birth(minimum_age=10, maximum_age=18),
+            'grade_level': random.randint(6, 12)
+        })
+    
+    teachers = []
+    subjects = ['Mathematics', 'Science', 'English', 'History', 'Art', 'Music', 'Physical Education']
+    for _ in range(num_teachers):
+        teachers.append({
+            'first_name': fake.first_name(),
+            'last_name': fake.last_name(),
+            'subject': random.choice(subjects)
+        })
+    
+    courses = [
+        {'name': 'Algebra', 'subject': 'Mathematics'},
+        {'name': 'Biology', 'subject': 'Science'},
+        {'name': 'Literature', 'subject': 'English'},
+        {'name': 'World History', 'subject': 'History'},
+        {'name': 'Chemistry', 'subject': 'Science'},
+        {'name': 'Geometry', 'subject': 'Mathematics'},
+        {'name': 'Physics', 'subject': 'Science'},
+        {'name': 'Art History', 'subject': 'Art'},
+        {'name': 'Music Theory', 'subject': 'Music'},
+        {'name': 'Physical Education', 'subject': 'Physical Education'}
+    ]
+    
+    return students, teachers, courses
 
 def insert_sample_data(connection):
-    insert_students = """
-    INSERT INTO students (first_name, last_name, date_of_birth, grade_level)
-    VALUES 
-    ('John', 'Doe', '2005-05-15', 10),
-    ('Jane', 'Smith', '2006-02-20', 9),
-    ('Mike', 'Johnson', '2004-11-30', 11);
-    """
+    """Insert generated sample data into the database."""
+    students, teachers, courses = generate_sample_data()
 
-    insert_teachers = """
-    INSERT INTO teachers (first_name, last_name, subject)
-    VALUES 
-    ('Alice', 'Brown', 'Mathematics'),
-    ('Bob', 'Wilson', 'Science'),
-    ('Carol', 'Taylor', 'English');
-    """
+    # Insert students
+    for student in students:
+        query = f"""
+        INSERT INTO students (first_name, last_name, date_of_birth, grade_level)
+        VALUES ('{student['first_name']}', '{student['last_name']}', '{student['date_of_birth']}', {student['grade_level']})
+        """
+        execute_query(connection, query)
 
-    insert_courses = """
-    INSERT INTO courses (course_name, teacher_id)
-    VALUES 
-    ('Algebra', 1),
-    ('Biology', 2),
-    ('Literature', 3);
-    """
+    # Insert teachers
+    for teacher in teachers:
+        query = f"""
+        INSERT INTO teachers (first_name, last_name, subject)
+        VALUES ('{teacher['first_name']}', '{teacher['last_name']}', '{teacher['subject']}')
+        """
+        execute_query(connection, query)
 
-    insert_enrollments = """
-    INSERT INTO enrollments (student_id, course_id)
-    VALUES 
-    (1, 1), (1, 2), (1, 3),
-    (2, 1), (2, 2),
-    (3, 2), (3, 3);
-    """
+    # Insert courses
+    for course in courses:
+        teacher = next((t for t in teachers if t['subject'] == course['subject']), None)
+        if teacher:
+            query = f"""
+            INSERT INTO courses (course_name, teacher_id)
+            VALUES ('{course['name']}', (SELECT teacher_id FROM teachers WHERE first_name = '{teacher['first_name']}' AND last_name = '{teacher['last_name']}'))
+            """
+            execute_query(connection, query)
 
-    insert_grades = """
-    INSERT INTO grades (enrollment_id, grade_value)
-    VALUES 
-    (1, 85.5), (2, 92.0), (3, 78.5),
-    (4, 88.0), (5, 90.5),
-    (6, 95.0), (7, 89.5);
-    """
+    # Insert enrollments and grades
+    for student in students:
+        for _ in range(random.randint(3, 5)):  # Each student enrolls in 3-5 courses
+            query = f"""
+            INSERT INTO enrollments (student_id, course_id)
+            VALUES (
+                (SELECT student_id FROM students WHERE first_name = '{student['first_name']}' AND last_name = '{student['last_name']}'),
+                (SELECT course_id FROM courses ORDER BY RAND() LIMIT 1)
+            )
+            """
+            execute_query(connection, query)
 
-    execute_query(connection, insert_students)
-    execute_query(connection, insert_teachers)
-    execute_query(connection, insert_courses)
-    execute_query(connection, insert_enrollments)
-    execute_query(connection, insert_grades)
+            # Add a grade for each enrollment
+            query = f"""
+            INSERT INTO grades (enrollment_id, grade_value)
+            VALUES (LAST_INSERT_ID(), {random.uniform(60, 100):.2f})
+            """
+            execute_query(connection, query)
 
 def main():
+    """Main function to initialize the database and insert sample data."""
     # Connect to the MySQL server
     server_connection = create_server_connection()
     if server_connection is not None:
         # Create the database
-        create_database(server_connection, "school_database")
+        create_database(server_connection, config['mysql']['database'])
         server_connection.close()
 
         # Connect to the newly created database
-        db_connection = create_db_connection("school_database")
+        db_connection = create_db_connection(config['mysql']['database'])
         if db_connection is not None:
             create_tables(db_connection)
             insert_sample_data(db_connection)
             db_connection.close()
+            logging.info("Database initialization completed successfully")
         else:
-            print("Failed to connect to the database.")
+            logging.error("Failed to connect to the database.")
     else:
-        print("Failed to connect to the MySQL server.")
+        logging.error("Failed to connect to the MySQL server.")
 
 if __name__ == "__main__":
     main()
