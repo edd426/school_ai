@@ -11,6 +11,11 @@ from datetime import datetime, timedelta
 # Load environment variables
 load_dotenv()
 
+# Check if MYSQL_PASSWORD is set
+if 'MYSQL_PASSWORD' not in os.environ:
+    logging.error("MYSQL_PASSWORD environment variable is not set. Please check your .env file.")
+    exit(1)
+
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -24,12 +29,13 @@ def create_server_connection():
         connection = mysql.connector.connect(
             host=config['mysql']['host'],
             user=config['mysql']['user'],
-            password=os.getenv('MYSQL_PASSWORD')
+            password=os.environ['MYSQL_PASSWORD']
         )
         logging.info("Successfully connected to MySQL server")
         return connection
     except Error as e:
         logging.error(f"Error connecting to MySQL Server: {e}")
+        logging.error(f"Please check your MySQL credentials and ensure the server is running.")
         return None
 
 def create_database(connection, database_name):
@@ -47,13 +53,14 @@ def create_db_connection(database_name):
         connection = mysql.connector.connect(
             host=config['mysql']['host'],
             user=config['mysql']['user'],
-            password=os.getenv('MYSQL_PASSWORD'),
+            password=os.environ['MYSQL_PASSWORD'],
             database=database_name
         )
         logging.info(f"Successfully connected to database: {database_name}")
         return connection
     except Error as e:
         logging.error(f"Error connecting to MySQL Database: {e}")
+        logging.error(f"Please check your MySQL credentials and ensure the server is running.")
         return None
 
 def execute_query(connection, query):
