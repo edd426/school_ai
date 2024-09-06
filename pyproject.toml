@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "school-ai"
+version = "0.1.0"
+description = "use ai to ask questions about a school database"
+authors = ["Evan DeLord <eddelord@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+mysql-connector-python = "^9.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
