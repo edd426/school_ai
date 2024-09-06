@@ -1,10 +1,12 @@
-# Starting MySQL Server on MacBook
+# School Database Setup Guide for MacBook
 
-This guide outlines the steps to start and manage your MySQL server on a MacBook.
+This guide outlines the steps to set up a MySQL server, configure the environment, and initialize a school database on a MacBook.
 
-## Initial Setup (If not already done)
+## 1. MySQL Server Setup
 
-1. Install Homebrew:
+### Install MySQL
+
+1. Install Homebrew if not already installed:
    ```
    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
    ```
@@ -14,63 +16,86 @@ This guide outlines the steps to start and manage your MySQL server on a MacBook
    brew install mysql
    ```
 
-3. Secure MySQL installation:
-   ```
-   mysql_secure_installation
-   ```
-   Follow the prompts to set a root password and configure security options.
+### Configure MySQL
 
-## Starting the MySQL Server
-
-1. Start MySQL service using Homebrew:
+1. Start MySQL service:
    ```
    brew services start mysql
    ```
 
-2. Verify MySQL service status:
+2. Secure MySQL installation:
+   ```
+   mysql_secure_installation
+   ```
+   - When prompted to set a root password, use: Swordfish
+   - Answer 'Y' to all other prompts for secure configuration
+
+3. Verify MySQL service status:
    ```
    brew services list
    ```
-   Look for `mysql` in the list. It should show as `started`.
+   MySQL should show as 'started'.
 
-## Stopping the MySQL Server
+## 2. Environment Setup
 
-If you need to stop the MySQL server:
+### Install pipx
 
-```
-brew services stop mysql
-```
-the password is Swordfish
+1. Install pipx if not already installed:
+   ```
+   brew install pipx
+   pipx ensurepath
+   ```
 
-## Restarting the MySQL Server
+### Install Poetry
 
-To restart the MySQL server:
+1. Use pipx to install Poetry:
+   ```
+   pipx install poetry
+   ```
 
-```
-brew services restart mysql
-```
+### Clone and Set Up the Project
 
-## Logging into MySQL
+1. Clone the project repository (replace with your actual repo URL):
+   ```
+   git clone https://github.com/your-username/school-database-project.git
+   cd school-database-project
+   ```
 
-To log in to the MySQL shell:
+2. Install project dependencies:
+   ```
+   poetry install
+   ```
 
-```
-mysql -u root -p
-```
-Enter your password when prompted.
+### Create .env File
 
-## Checking MySQL Server Status
+1. Create a .env file in the project root:
+   ```
+   echo "MYSQL_PASSWORD=Swordfish" > .env
+   ```
 
-To check if MySQL server is running:
+## 3. Initialize the Database
 
-```
-ps aux | grep mysql
-```
-If MySQL is running, you'll see multiple lines of output.
+1. Activate the Poetry environment:
+   ```
+   poetry shell
+   ```
+
+2. Run the database initializer script:
+   ```
+   python database_initializer.py
+   ```
+
+## Additional MySQL Commands
+
+- Start MySQL server: `brew services start mysql`
+- Stop MySQL server: `brew services stop mysql`
+- Restart MySQL server: `brew services restart mysql`
+- Log into MySQL shell: `mysql -u root -p` (enter password when prompted)
+- Check MySQL status: `ps aux | grep mysql`
 
 ## Troubleshooting
 
-If you encounter issues starting MySQL:
+If you encounter issues with MySQL:
 
 1. Check MySQL error logs:
    ```
@@ -82,10 +107,10 @@ If you encounter issues starting MySQL:
    sudo chown -R _mysql:_mysql /usr/local/var/mysql
    ```
 
-3. Reinstall MySQL if persistent issues occur:
+3. If problems persist, consider reinstalling MySQL:
    ```
    brew uninstall mysql
    brew install mysql
    ```
 
-Remember to secure your MySQL installation and regularly backup your databases.
+Remember to regularly backup your databases and keep your MySQL installation secure.
