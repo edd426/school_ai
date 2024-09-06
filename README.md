@@ -1,4 +1,3 @@
-```markdown
 # Starting MySQL Server on MacBook
 
 This guide outlines the steps to start and manage your MySQL server on a MacBook.
@@ -41,6 +40,7 @@ If you need to stop the MySQL server:
 ```
 brew services stop mysql
 ```
+the password is Swordfish
 
 ## Restarting the MySQL Server
 
@@ -89,4 +89,3 @@ If you encounter issues starting MySQL:
    ```
 
 Remember to secure your MySQL installation and regularly backup your databases.
-```
