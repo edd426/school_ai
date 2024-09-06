@@ -8,6 +8,9 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.12"
 mysql-connector-python = "^9.0.0"
+python-dotenv = "^1.0.0"
+pyyaml = "^6.0.1"
+faker = "^28.4.0"
 
 
 [build-system]
