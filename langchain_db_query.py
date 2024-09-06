@@ -26,7 +26,7 @@ engine = create_engine(db_url)
 db = SQLDatabase(engine)
 
 # Initialize Claude AI model
-model = ChatAnthropic(temperature=0, anthropic_api_key=os.getenv("ANTHROPIC_AI_KEY"))
+model = ChatAnthropic(temperature=0, anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"))
 
 # Create SQLDatabaseChain
 db_chain = SQLDatabaseChain.from_llm(model, db, verbose=True)
