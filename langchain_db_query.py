@@ -45,9 +45,11 @@ def query_database(question: str) -> str:
     except Exception as e:
         return f"An error occurred: {str(e)}"
 
-# Example usage
-if __name__ == "__main__":
+def main():
     question = "How many students are in the database?"
     answer = query_database(question)
     print(f"Question: {question}")
     print(f"Answer: {answer}")
+
+if __name__ == "__main__":
+    main()
