@@ -1,7 +1,8 @@
 import os
 import yaml
 from dotenv import load_dotenv
-from langchain import SQLDatabase, SQLDatabaseChain
+from langchain import SQLDatabase
+from langchain.chains import SQLDatabaseChain
 from langchain.chat_models import ChatAnthropic
 from sqlalchemy import create_engine
 
