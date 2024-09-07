@@ -2,8 +2,8 @@ import os
 import yaml
 from dotenv import load_dotenv
 from langchain_community.utilities import SQLDatabase
-# from langchain_community.chains import SQLDatabaseChain
 from langchain.chains import create_sql_query_chain
+from langchain.chains.sql_database.query import create_sql_query_chain
 from langchain_anthropic import ChatAnthropic
 from sqlalchemy import create_engine
 
@@ -41,8 +41,9 @@ def query_database(question: str) -> str:
     :return: The answer to the question based on the database content
     """
     try:
-        result = db_chain.run(question)
-        return result
+        query = db_chain.invoke({"question": question})
+        result = db.run(query)
+        return f"SQL Query: {query}\n\nResult: {result}"
     except Exception as e:
         return f"An error occurred: {str(e)}"
 
