@@ -44,37 +44,50 @@ llm = ChatAnthropic(model='claude-3-5-sonnet-20240620')
 # Create SQLDatabaseChain
 db_chain = create_sql_query_chain(llm, db)
 
-def query_database(question: str) -> str:
+def query_database(question: str, max_attempts: int = 3) -> str:
     """
     Execute a natural language query on the database using LangChain and Claude AI.
     
     :param question: A natural language question about the database
+    :param max_attempts: Maximum number of attempts to correct the SQL query
     :return: The answer to the question based on the database content
     """
     try:
         response = db_chain.invoke({"question": question})
         sql_query = extract_sql_query(response)
-        if sql_query:
+        if not sql_query:
+            return "Unable to generate a valid SQL query."
+
+        for attempt in range(max_attempts):
             try:
                 result = db.run(sql_query)
                 formatted_result = format_result(result)
-                return f"SQL Query: {sql_query}\n\nResult:\n{formatted_result}"
+                return f"SQL Query (Attempt {attempt + 1}):\n{sql_query}\n\nResult:\n{formatted_result}"
             except Exception as sql_error:
-                # If there's an error, ask the LLM to fix it
-                fix_prompt = f"The following SQL query resulted in an error: {sql_query}\n\nError: {str(sql_error)}\n\nPlease provide a corrected version of this SQL query that will work with MySQL."
+                if attempt == max_attempts - 1:
+                    return f"Unable to execute the SQL query after {max_attempts} attempts. Final error: {str(sql_error)}"
+                
+                # Ask the LLM to fix the query
+                fix_prompt = f"""
+                The following SQL query resulted in an error:
+                {sql_query}
+
+                Error: {str(sql_error)}
+
+                Please provide a corrected version of this SQL query that will work with MySQL.
+                Consider the following:
+                1. Ensure all columns in the SELECT statement are either in the GROUP BY clause or used with an aggregate function.
+                2. Check for proper table joins and aliasing.
+                3. Verify the syntax is compatible with MySQL.
+                4. Make sure all referenced columns and tables exist in the database.
+
+                Provide only the corrected SQL query without any explanations.
+                """
                 fixed_response = llm.invoke(fix_prompt)
-                fixed_sql_query = extract_sql_query(fixed_response)
-                if fixed_sql_query:
-                    try:
-                        result = db.run(fixed_sql_query)
-                        formatted_result = format_result(result)
-                        return f"Original SQL Query (with error): {sql_query}\n\nCorrected SQL Query: {fixed_sql_query}\n\nResult:\n{formatted_result}"
-                    except Exception as new_error:
-                        return f"Unable to execute the corrected SQL query. Error: {str(new_error)}"
-                else:
-                    return f"Unable to correct the SQL query. Original error: {str(sql_error)}"
-        else:
-            return "Unable to generate a valid SQL query."
+                sql_query = extract_sql_query(fixed_response)
+                if not sql_query:
+                    return f"Unable to generate a valid SQL query after attempt {attempt + 1}."
+
     except Exception as e:
         return f"An error occurred: {str(e)}"
 
