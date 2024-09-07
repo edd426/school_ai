@@ -6,9 +6,20 @@ from langchain.chains import create_sql_query_chain
 from langchain.chains.sql_database.query import create_sql_query_chain
 from langchain_anthropic import ChatAnthropic
 from sqlalchemy import create_engine
+from tabulate import tabulate
 
 # Load environment variables
 load_dotenv()
+
+# Function to format the result as a table
+def format_result(result):
+    if isinstance(result, list) and len(result) > 0:
+        if isinstance(result[0], tuple):
+            headers = [f"Column {i+1}" for i in range(len(result[0]))]
+            return tabulate(result, headers=headers, tablefmt="grid")
+        elif isinstance(result[0], dict):
+            return tabulate(result, headers="keys", tablefmt="grid")
+    return str(result)
 
 # Load database configuration
 with open('config.yaml', 'r') as config_file:
@@ -46,7 +57,8 @@ def query_database(question: str) -> str:
         sql_query = extract_sql_query(response)
         if sql_query:
             result = db.run(sql_query)
-            return f"SQL Query: {sql_query}\n\nResult: {result}"
+            formatted_result = format_result(result)
+            return f"SQL Query: {sql_query}\n\nResult:\n{formatted_result}"
         else:
             return "Unable to generate a valid SQL query."
     except Exception as e:
