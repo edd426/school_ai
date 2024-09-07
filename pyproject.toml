@@ -11,9 +11,9 @@ mysql-connector-python = "^9.0.0"
 python-dotenv = "^1.0.0"
 pyyaml = "^6.0.1"
 faker = "^28.4.0"
-langchain = "^0.0.330"
-langchain-anthropic = "^0.1.23"
-anthropic = "^0.3.11"
+langchain = "~0.2"
+langchain-anthropic = "~0.1"
+anthropic = "~0.30"
 sqlalchemy = "^2.0.23"
 
 
