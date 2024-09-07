@@ -13,9 +13,9 @@ pyyaml = "^6.0.1"
 faker = "^28.4.0"
 langchain = "~0.2"
 langchain-anthropic = "~0.1"
-anthropic = "~0.30"
+anthropic = "~0"
 sqlalchemy = "^2.0.23"
-langchain-community = "^0.0.24"
+langchain-community = "~0"
 
 
 [build-system]
