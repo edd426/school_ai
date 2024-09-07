@@ -93,20 +93,25 @@ def extract_sql_query(response: str) -> str:
         # Extract from the first SQL keyword to the end of the string
         query = response[match.start():].strip()
         
+        # Remove any backticks from column names
+        query = re.sub(r'`([^`]+)`', r'\1', query)
+        
         # Modify the query to comply with ONLY_FULL_GROUP_BY mode
-        # This is a simple modification and might not work for all cases
         if 'GROUP BY' in query:
             # Add all non-aggregated columns from SELECT to GROUP BY
             select_columns = re.search(r'SELECT(.*?)FROM', query, re.IGNORECASE | re.DOTALL)
             if select_columns:
                 columns = [col.strip() for col in select_columns.group(1).split(',')]
-                non_aggregated = [col for col in columns if not re.search(r'(SUM|COUNT|AVG|MAX|MIN)\(', col, re.IGNORECASE)]
+                non_aggregated = [col.split()[-1] for col in columns if not re.search(r'(SUM|COUNT|AVG|MAX|MIN)\(', col, re.IGNORECASE)]
                 
                 group_by_clause = re.search(r'GROUP BY(.*?)($|\s*ORDER BY|\s*LIMIT)', query, re.IGNORECASE | re.DOTALL)
                 if group_by_clause:
-                    existing_group_by = group_by_clause.group(1).strip()
-                    new_group_by = existing_group_by + ', ' + ', '.join(non_aggregated)
-                    query = query.replace(group_by_clause.group(0), f"GROUP BY {new_group_by}")
+                    new_group_by = ', '.join(set(non_aggregated))
+                    query = re.sub(r'GROUP BY.*?($|\s*ORDER BY|\s*LIMIT)', f"GROUP BY {new_group_by}", query, flags=re.IGNORECASE | re.DOTALL)
+        
+        # Ensure there's an ORDER BY clause for the MAX aggregate
+        if 'MAX(' in query and 'ORDER BY' not in query:
+            query = query.rstrip(';') + f"\nORDER BY MAX(grade_value) DESC;"
         
         return query
     return None
