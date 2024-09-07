@@ -81,7 +81,7 @@ def extract_sql_query(response: str) -> str:
     return None
 
 def main():
-    question = "How many students are in the database?"
+    question = "Which student has the top grade in each year group?"
     answer = query_database(question)
     print(f"Question: {question}")
     print(f"Answer: {answer}")
