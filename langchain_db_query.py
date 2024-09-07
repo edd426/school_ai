@@ -53,12 +53,24 @@ def query_database(question: str) -> str:
     """
     try:
         response = db_chain.invoke({"question": question})
-        # Extract the SQL query from the response
+        # Extract and modify the SQL query from the response
         sql_query = extract_sql_query(response)
         if sql_query:
-            result = db.run(sql_query)
-            formatted_result = format_result(result)
-            return f"SQL Query: {sql_query}\n\nResult:\n{formatted_result}"
+            try:
+                result = db.run(sql_query)
+                formatted_result = format_result(result)
+                return f"SQL Query: {sql_query}\n\nResult:\n{formatted_result}"
+            except Exception as sql_error:
+                # If there's still an error, we'll ask the LLM to fix it
+                fix_prompt = f"The following SQL query resulted in an error: {sql_query}\n\nError: {str(sql_error)}\n\nPlease provide a corrected version of this SQL query that will work with MySQL in ONLY_FULL_GROUP_BY mode."
+                fixed_response = llm.invoke(fix_prompt)
+                fixed_sql_query = extract_sql_query(fixed_response)
+                if fixed_sql_query:
+                    result = db.run(fixed_sql_query)
+                    formatted_result = format_result(result)
+                    return f"Original SQL Query (with error): {sql_query}\n\nCorrected SQL Query: {fixed_sql_query}\n\nResult:\n{formatted_result}"
+                else:
+                    return f"Unable to correct the SQL query. Original error: {str(sql_error)}"
         else:
             return "Unable to generate a valid SQL query."
     except Exception as e:
@@ -66,10 +78,10 @@ def query_database(question: str) -> str:
 
 def extract_sql_query(response: str) -> str:
     """
-    Extract the SQL query from the LLM's response.
+    Extract and modify the SQL query from the LLM's response to comply with ONLY_FULL_GROUP_BY mode.
     
     :param response: The full response from the LLM
-    :return: The extracted SQL query, or None if not found
+    :return: The extracted and modified SQL query, or None if not found
     """
     import re
     # Look for SQL keywords to identify the start of the query
@@ -77,7 +89,24 @@ def extract_sql_query(response: str) -> str:
     match = re.search(sql_keywords, response, re.IGNORECASE)
     if match:
         # Extract from the first SQL keyword to the end of the string
-        return response[match.start():].strip()
+        query = response[match.start():].strip()
+        
+        # Modify the query to comply with ONLY_FULL_GROUP_BY mode
+        # This is a simple modification and might not work for all cases
+        if 'GROUP BY' in query:
+            # Add all non-aggregated columns from SELECT to GROUP BY
+            select_columns = re.search(r'SELECT(.*?)FROM', query, re.IGNORECASE | re.DOTALL)
+            if select_columns:
+                columns = [col.strip() for col in select_columns.group(1).split(',')]
+                non_aggregated = [col for col in columns if not re.search(r'(SUM|COUNT|AVG|MAX|MIN)\(', col, re.IGNORECASE)]
+                
+                group_by_clause = re.search(r'GROUP BY(.*?)($|\s*ORDER BY|\s*LIMIT)', query, re.IGNORECASE | re.DOTALL)
+                if group_by_clause:
+                    existing_group_by = group_by_clause.group(1).strip()
+                    new_group_by = existing_group_by + ', ' + ', '.join(non_aggregated)
+                    query = query.replace(group_by_clause.group(0), f"GROUP BY {new_group_by}")
+        
+        return query
     return None
 
 def main():
