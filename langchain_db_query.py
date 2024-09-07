@@ -54,7 +54,7 @@ def query_database(question: str) -> str:
     try:
         response = db_chain.invoke({"question": question})
         # Extract and modify the SQL query from the response
-        sql_query = extract_sql_query(response.content)
+        sql_query = extract_sql_query(response)
         if sql_query:
             try:
                 result = db.run(sql_query)
@@ -84,7 +84,7 @@ def extract_sql_query(response: str) -> str:
     :return: The extracted and modified SQL query, or None if not found
     """
     import re
-    if not response:
+    if not isinstance(response, str):
         return None
     # Look for SQL keywords to identify the start of the query
     sql_keywords = r'\b(SELECT|INSERT|UPDATE|DELETE|CREATE|ALTER|DROP)\b'
