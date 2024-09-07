@@ -41,11 +41,32 @@ def query_database(question: str) -> str:
     :return: The answer to the question based on the database content
     """
     try:
-        query = db_chain.invoke({"question": question})
-        result = db.run(query)
-        return f"SQL Query: {query}\n\nResult: {result}"
+        response = db_chain.invoke({"question": question})
+        # Extract the SQL query from the response
+        sql_query = extract_sql_query(response)
+        if sql_query:
+            result = db.run(sql_query)
+            return f"SQL Query: {sql_query}\n\nResult: {result}"
+        else:
+            return "Unable to generate a valid SQL query."
     except Exception as e:
         return f"An error occurred: {str(e)}"
+
+def extract_sql_query(response: str) -> str:
+    """
+    Extract the SQL query from the LLM's response.
+    
+    :param response: The full response from the LLM
+    :return: The extracted SQL query, or None if not found
+    """
+    import re
+    # Look for SQL keywords to identify the start of the query
+    sql_keywords = r'\b(SELECT|INSERT|UPDATE|DELETE|CREATE|ALTER|DROP)\b'
+    match = re.search(sql_keywords, response, re.IGNORECASE)
+    if match:
+        # Extract from the first SQL keyword to the end of the string
+        return response[match.start():].strip()
+    return None
 
 def main():
     question = "How many students are in the database?"
