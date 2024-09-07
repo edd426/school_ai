@@ -111,7 +111,13 @@ def extract_sql_query(response: str) -> str:
         
         # Ensure there's an ORDER BY clause for the MAX aggregate
         if 'MAX(' in query and 'ORDER BY' not in query:
-            query = query.rstrip(';') + f"\nORDER BY MAX(grade_value) DESC;"
+            query = query.rstrip(';') + f" ORDER BY MAX(grade_value) DESC;"
+        
+        # Remove any duplicate clauses (like multiple ORDER BY)
+        query = re.sub(r'(ORDER BY.*?);?\s*(ORDER BY)', r'\1;', query, flags=re.IGNORECASE)
+        
+        # Ensure the query ends with a semicolon
+        query = query.rstrip(';') + ';'
         
         return query
     return None
