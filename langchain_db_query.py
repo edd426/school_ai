@@ -2,7 +2,8 @@ import os
 import yaml
 from dotenv import load_dotenv
 from langchain_community.utilities import SQLDatabase
-from langchain_community.chains import SQLDatabaseChain
+# from langchain_community.chains import SQLDatabaseChain
+from langchain.chains import create_sql_query_chain
 from langchain_anthropic import ChatAnthropic
 from sqlalchemy import create_engine
 
@@ -27,10 +28,10 @@ engine = create_engine(db_url)
 db = SQLDatabase(engine)
 
 # Initialize Claude AI model
-model = ChatAnthropic(temperature=0, anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"))
+llm = ChatAnthropic(model='claude-3-5-sonnet-20240620')
 
 # Create SQLDatabaseChain
-db_chain = SQLDatabaseChain.from_llm(model, db, verbose=True)
+db_chain = create_sql_query_chain(llm, db)
 
 def query_database(question: str) -> str:
     """
