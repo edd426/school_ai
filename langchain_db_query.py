@@ -124,7 +124,13 @@ def extract_sql_query(response: str) -> str:
     return None
 
 def main():
-    question = "Which student has the top grade in each year group?"
+    # Questions that work:
+    # "How many students are in the school?"
+    # "How many students are in year 11?"
+    
+    # Questions that don't work:
+    
+    question = "How many students are in year 11?"
     answer = query_database(question)
     print(f"Question: {question}")
     print(f"Answer: {answer}")
