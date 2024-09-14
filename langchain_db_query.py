@@ -124,16 +124,21 @@ def extract_sql_query(response: str) -> str:
     return None
 
 def main():
-    # Questions that work:
-    # "How many students are in the school?"
-    # "How many students are in year 11?"
+    questions = [
+        "How many students are in the school?",
+        "How many students are in year 11?",
+        "What is the average age of teachers?",
+        "How many students are there in each year?",
+        "List the number of teachers for each subject",
+        "Who is the youngest teacher and what subject do they teach?",
+        "List the top 5 students with the highest average grades across all subjects"
+    ]
     
-    # Questions that don't work:
-    
-    question = "How many students are in year 11?"
-    answer = query_database(question)
-    print(f"Question: {question}")
-    print(f"Answer: {answer}")
+    for question in questions:
+        answer = query_database(question)
+        print(f"Question: {question}")
+        print(f"Answer: {answer}")
+        print("-" * 50)
 
 if __name__ == "__main__":
     main()
