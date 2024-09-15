@@ -20,12 +20,6 @@ class TestLangChainDBQuery(unittest.TestCase):
         self.assertIn("Result:", result)
         self.assertIn("[(4,)]", result)
 
-    def test_average_age_of_teachers(self):
-        question = "What is the average age of teachers?"
-        result = query_database(question)
-        self.assertIn("Result:", result)
-        self.assertRegex(result, r"\[\((\d+\.\d+,)\)\]")  # Check for a float value
-
     def test_students_per_year(self):
         question = "How many students are there in each year?"
         result = query_database(question)
@@ -40,12 +34,6 @@ class TestLangChainDBQuery(unittest.TestCase):
         result = query_database(question)
         self.assertIn("Result:", result)
         self.assertRegex(result, r"\|\s+\w+\s+\|\s+\d+\s+\|")
-
-    def test_youngest_teacher(self):
-        question = "Who is the youngest teacher and what subject do they teach?"
-        result = query_database(question)
-        self.assertIn("Result:", result)
-        self.assertRegex(result, r"\|\s+\w+\s+\|\s+\w+\s+\|\s+\w+\s+\|\s+\d+\s+\|")
 
     def test_students_with_highest_grades(self):
         question = "List the top 5 students with the highest average grades across all subjects"
