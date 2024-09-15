@@ -127,11 +127,12 @@ def main():
     questions = [
         "How many students are in the school?",
         "How many students are in year 11?",
-        "What is the average age of teachers?",
-        "How many students are there in each year?",
+        # "What is the average age of teachers?",
+        "How many students are there in each year?", # limits to 5?
         "List the number of teachers for each subject",
-        "Who is the youngest teacher and what subject do they teach?",
-        "List the top 5 students with the highest average grades across all subjects"
+        #"Who is the youngest teacher and what subject do they teach?",
+        "List the top 5 students with the highest average grades across all subjects",
+        "Give the name of the student with the top score out of all classes."
     ]
     
     for question in questions:
