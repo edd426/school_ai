@@ -90,18 +90,18 @@ This guide outlines the steps to set up a MySQL server, configure the environmen
    python database_initializer.py
    ```
 
-## FastAPI Server
+## 4. FastAPI Server
 
 1. Run the FastApi server:
-```
-poetry run uvicorn main:app --reload
-```
+   ```
+   poetry run uvicorn main:app --reload
+   ```
 2. Access the API documentation at `http://127.0.0.1:8000/docs`.
 
 3. Run the tests using pytest:
-```
-poetry run pytest
-```
+   ```
+   poetry run pytest
+   ```   
 
 ## Additional MySQL Commands
 
