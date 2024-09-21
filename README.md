@@ -51,6 +51,8 @@ This guide outlines the steps to set up a MySQL server, configure the environmen
 1. Use pipx to install Poetry:
    ```
    pipx install poetry
+   pipx ensurepath
+   source ~/.zshrc
    ```
 
 ### Clone and Set Up the Project
