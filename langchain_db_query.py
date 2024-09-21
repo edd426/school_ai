@@ -53,7 +53,9 @@ def query_database(question: str, max_attempts: int = 3) -> str:
     :return: The answer to the question based on the database content
     """
     try:
-        response = db_chain.invoke({"question": question})
+        # Modify the prompt to instruct LangChain not to use LIMIT clauses
+        prompt = f"Generate an SQL query for the following question without using LIMIT clauses: {question}"
+        response = db_chain.invoke({"question": prompt})
         sql_query = extract_sql_query(response)
         if not sql_query:
             return "Unable to generate a valid SQL query."
@@ -80,6 +82,7 @@ def query_database(question: str, max_attempts: int = 3) -> str:
                 2. Check for proper table joins and aliasing.
                 3. Verify the syntax is compatible with MySQL.
                 4. Make sure all referenced columns and tables exist in the database.
+                5. Do not use LIMIT clauses.
 
                 Provide only the corrected SQL query without any explanations.
                 """
@@ -128,7 +131,7 @@ def main():
         "How many students are in the school?",
         "How many students are in year 11?",
         "How many students are there in each year?",
-        "List the number of teachers for each subject",
+        "How many teachers are there for each subject?",
         "List the top 5 students with the highest average grades across all subjects",
         "Give the name of the student with the top score out of all classes."
     ]
