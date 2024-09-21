@@ -57,7 +57,7 @@ This guide outlines the steps to set up a MySQL server, configure the environmen
 
 1. Clone the project repository (replace with your actual repo URL):
    ```
-   git clone https://github.com/your-username/school-database-project.git
+   git clone https://github.com/edd426/school_ai.git
    cd school-database-project
    ```
 
