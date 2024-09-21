@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "use ai to ask questions about a school database"
 authors = ["Evan DeLord <eddelord@gmail.com>"]
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -17,6 +18,9 @@ anthropic = "~0"
 sqlalchemy = "^2.0.23"
 langchain-community = "~0"
 tabulate = "^0.9.0"
+fastapi = "^0.115.0"
+uvicorn = "^0.30.6"
+pytest = "^8.3.3"
 
 
 [build-system]
