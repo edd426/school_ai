@@ -1,0 +1,19 @@
+*{
+    box-sizing: margin-box;
+}
+h1, h2{
+    text-align: center; 
+}
+h2{
+    color: rgb(205, 86, 86);
+}
+input{
+    height: 2rem;
+    width: 80%;
+    margin: 0 1.4%;
+}
+button{
+    border:.1rem solid black;
+    height: 2rem;
+    width: 15%;
+}
