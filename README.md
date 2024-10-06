@@ -72,10 +72,13 @@ This guide outlines the steps to set up a MySQL server, configure the environmen
 
 1. Create a .env file in the project root:
    ```
-   echo "MYSQL_PASSWORD=Swordfish" > .env
+   echo "MYSQL_PASSWORD='Swordfish'" > .env
    ```
+2. Also pass your ANTHROPIC_API_KEY to the .env file. Be sure to fill in with your actual key:
+   ```
+   echo "ANTHROPIC_API_KEY='<Your Antrhopic API Key Here>'"
 
-## 3. Initialize the Database
+## 3. Initialize the Database for the First Time
 
 1. Activate the Poetry environment:
    ```
@@ -86,6 +89,19 @@ This guide outlines the steps to set up a MySQL server, configure the environmen
    ```
    python database_initializer.py
    ```
+
+## 4. FastAPI Server
+
+1. Run the FastApi server:
+   ```
+   poetry run uvicorn main:app --reload
+   ```
+2. Access the API documentation at `http://127.0.0.1:8000/docs`.
+
+3. Run the tests using pytest:
+   ```
+   poetry run pytest
+   ```   
 
 ## Additional MySQL Commands
 
